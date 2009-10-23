@@ -5,16 +5,16 @@ module FindOrRedirect
   
   module ClassMethods
     def find_or_redirect(opts = {})
-      klass = controller_name.classify
-      instance = controller_name.singularize
-      redirect_target = opts.delete(:redirect_to) || ":action => :index"
-      finder = opts.delete(:finder) || klass
+      instance = (opts[:name] || controller_name).singularize
+      redirect_target = opts[:redirect_to] || ":action => :index"
+      klass = (opts[:name] || controller_name).classify
+      finder = opts[:finder] || "#{klass}.find_by_id(params[:id])"
       
       class_eval <<-RUBYSRC
         before_filter :find_#{ instance }_or_redirect, #{ opts.inspect }
         private
         def find_#{ instance }_or_redirect
-          @#{ instance } = #{ finder }.find_by_id params[:id]
+          @#{ instance } = #{ finder }
           unless @#{ instance }
             redirect_to #{ redirect_target }
             flash[:error] = "Invalid #{ klass } ID"

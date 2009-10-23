@@ -1,6 +1,75 @@
 = find_or_redirect
 
-Description goes here.
+Find or Redirect helps you refactor out model finding code in your controllers.
+
+This is a common pattern in rails:
+
+  class ModelsController < ApplicationController
+    def show
+      @model = Model.find(params[:id])
+    end
+
+    def destroy
+      @model = Model.find(params[:id])
+      @model.destroy
+    end  
+  end
+
+Not so dry! Also, this throws exceptions if the model can't be found. Find or Redirect improves on that by using "find_by_id" and catching a miss with a redirection and friendly flash[:error] message.
+
+== Installation
+
+Enable gemcutter, then just:
+
+  gem install find_or_redirect
+
+== Usage
+
+  class ModelsController
+    find_or_redirect :only => [ :show, :destroy ]
+    def show
+    end
+    def destroy
+      @model.destroy
+    end
+  end
+
+The class variable is inferred from the controller name. All options passed to find_or_redirect are automatically passed along to the before_filter created, so you can use :only and :except.
+
+=== Additional Options
+
+==== redirect_to
+  
+Redirect to a path other than this controller's index
+
+  find_or_redirect :redirect_to => "root_path"
+
+==== name
+
+Specify the name of the variable to set
+
+  find_or_redirect :name => "something_else"
+
+  def destroy
+    @something_else.destroy
+  end
+
+==== finder
+
+Find the model in a different fashion (helpful when the controller name doesn't match the finder, or if you want to use multiple find_or_redirects)
+
+  class ParentsController
+    find_or_redirect
+    find_or_redirect :finder => "@parent.children.find_by_id(params[:child_id])", :name => "child"
+    find_or_redirect :finder => "Tag.find_by_slug(params[:tag])", :name => "tag"
+
+    def update_child_tag
+      @child.tag = @tag
+      @child.save!
+      @parent.last_tag = @tag
+      @parent.save!
+    end
+  end
 
 == Note on Patches/Pull Requests
  
