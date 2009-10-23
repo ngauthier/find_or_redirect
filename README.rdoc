@@ -2,6 +2,14 @@
 
 Find or Redirect helps you refactor out model finding code in your controllers.
 
+== Installation
+
+Enable gemcutter, then just:
+
+  gem install find_or_redirect
+
+== Usage
+
 This is a common pattern in rails:
 
   class ModelsController < ApplicationController
@@ -17,18 +25,40 @@ This is a common pattern in rails:
 
 Not so dry! Also, this throws exceptions if the model can't be found. Find or Redirect improves on that by using "find_by_id" and catching a miss with a redirection and friendly flash[:error] message.
 
-== Installation
 
-Enable gemcutter, then just:
+It's like you did this:
 
-  gem install find_or_redirect
+  class ModelsController < ApplicationController
+    before_filter :find_model
+    def show
+    end
 
-== Usage
+    def destroy
+      @model.destroy
+    end  
+
+    private
+
+    def find_model
+      @model = Model.find_by_id(params[:id])
+      unless @model
+        redirect_to :action => :index
+        flash[:error] = "Invalid model id"
+        return false
+      end
+    end
+  end
+
+But it gets repetitive doing that in all your controllers, and it's certainly not DRY.
+
+So how about:
 
   class ModelsController
     find_or_redirect :only => [ :show, :destroy ]
+
     def show
     end
+    
     def destroy
       @model.destroy
     end
