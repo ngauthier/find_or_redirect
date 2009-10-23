@@ -89,9 +89,18 @@ Specify the name of the variable to set
 Find the model in a different fashion (helpful when the controller name doesn't match the finder, or if you want to use multiple find_or_redirects)
 
   class ParentsController
+    # this automatically finds the parent
     find_or_redirect
-    find_or_redirect :finder => "@parent.children.find_by_id(params[:child_id])", :name => "child"
-    find_or_redirect :finder => "Tag.find_by_slug(params[:tag])", :name => "tag"
+    # now we'll find the child from the parent's children and param
+    find_or_redirect(
+      :name => "child"
+      :finder => "@parent.children.find_by_id(params[:child_id])"
+    )
+    # and grab the tag the user requested
+    find_or_redirect(
+      :name => "tag",
+      :finder => "Tag.find_by_slug(params[:tag])"
+    )
 
     def update_child_tag
       @child.tag = @tag
