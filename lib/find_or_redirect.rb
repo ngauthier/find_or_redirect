@@ -9,11 +9,13 @@ module FindOrRedirect
       redirect_target = opts[:redirect_to] || ":action => :index"
       klass = (opts[:name] || controller_name).classify
       finder = opts[:finder] || "#{klass}.find_by_id(params[:id])"
+      filter_name = opts[:filter_name] || "find_#{ instance }_or_redirect"
+      condition = opts[:if] || true
       
       class_eval <<-RUBYSRC
-        before_filter :find_#{ instance }_or_redirect, #{ opts.inspect }
+        before_filter :#{ filter_name }, #{ opts.inspect }
         private
-        def find_#{ instance }_or_redirect
+        def #{ filter_name }
           @#{ instance } = #{ finder }
           unless @#{ instance }
             redirect_to #{ redirect_target }
